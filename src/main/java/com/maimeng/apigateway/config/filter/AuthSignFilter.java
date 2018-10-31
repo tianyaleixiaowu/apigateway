@@ -1,87 +1,87 @@
 package com.maimeng.apigateway.config.filter;
 
-import io.netty.buffer.ByteBufAllocator;
+import com.maimeng.apigateway.config.jwt.JwtUtils;
+import com.xiaoleilu.hutool.date.DateUtil;
+import io.jsonwebtoken.Claims;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.core.Ordered;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
+import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.ipc.netty.http.client.HttpClientResponse;
 
-import java.net.URI;
-import java.nio.CharBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Resource;
+import java.util.List;
+
+import static com.maimeng.apigateway.common.Constant.USER_ID;
+import static com.xiaoleilu.hutool.date.DatePattern.NORM_DATETIME_MINUTE_PATTERN;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 /**
+ * 校验jwt的filter
  * @author wuweifeng wrote on 2018/10/24.
  */
 @Component
 public class AuthSignFilter implements GlobalFilter, Ordered {
+    @Resource
+    private JwtUtils jwtUtils;
+
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
-        String method = serverHttpRequest.getMethodValue();
-        if ("POST".equals(method)) {
-            //从请求里获取Post请求体
-            String bodyStr = resolveBodyFromRequest(serverHttpRequest);
-            //TODO 得到Post请求的请求参数后，做你想做的事
-
-            //下面的将请求体再次封装写回到request里，传到下一级，否则，由于请求体已被消费，后续的服务将取不到值
-            URI uri = serverHttpRequest.getURI();
-            ServerHttpRequest request = serverHttpRequest.mutate().uri(uri).build();
-            DataBuffer bodyDataBuffer = stringBuffer(bodyStr);
-            Flux<DataBuffer> bodyFlux = Flux.just(bodyDataBuffer);
-
-            request = new ServerHttpRequestDecorator(request) {
-                @Override
-                public Flux<DataBuffer> getBody() {
-                    return bodyFlux;
-                }
-            };
-            //封装request，传给下一级
-            return chain.filter(exchange.mutate().request(request).build());
-        } else if ("GET".equals(method)) {
-            Map requestQueryParams = serverHttpRequest.getQueryParams();
-            //TODO 得到Get请求的请求参数后，做你想做的事
-
+        HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
+        String url = serverHttpRequest.getURI().toString();
+        //登录请求放行
+        if (url.endsWith("authserver/user/login")) {
             return chain.filter(exchange);
         }
-        return chain.filter(exchange);
+
+        List<String> list = httpHeaders.get(AUTHORIZATION);
+        if (list.size() == 0) {
+            //没有Authorization
+            return noAuth(exchange);
+        }
+        String jwtToken = list.get(0);
+        Claims claims = jwtUtils.getClaimByToken(jwtToken);
+        if (claims == null) {
+            return noAuth(exchange);
+        }
+        logger.info("token的过期时间是：" + DateUtil.format(claims.getExpiration(), NORM_DATETIME_MINUTE_PATTERN));
+        if (jwtUtils.isTokenExpired(claims.getExpiration())) {
+            return noAuth(exchange);
+        }
+
+        String userId = claims.getSubject();
+        //向headers中放文件，记得build
+        ServerHttpRequest request = serverHttpRequest.mutate().header(USER_ID, userId).build();
+        //将现在的request 变成 change对象 
+        ServerWebExchange build = exchange.mutate().request(request).build();
+
+        return chain.filter(build).then(Mono.fromRunnable(() -> {
+            // 获取到response 可以对响应体进行重写。
+            ServerHttpResponse response = exchange.getResponse();
+            DataBufferFactory dataBufferFactory = response.bufferFactory();
+
+            HttpClientResponse clientResponse = exchange.getAttribute(ServerWebExchangeUtils.CLIENT_RESPONSE_ATTR);
+            System.err.println(2);
+            
+        }));
     }
 
-    /**
-     * 从Flux<DataBuffer>中获取字符串的方法
-     * @return 请求体
-     */
-    private String resolveBodyFromRequest(ServerHttpRequest serverHttpRequest) {
-        //获取请求体
-        Flux<DataBuffer> body = serverHttpRequest.getBody();
-
-        AtomicReference<String> bodyRef = new AtomicReference<>();
-        body.subscribe(buffer -> {
-            CharBuffer charBuffer = StandardCharsets.UTF_8.decode(buffer.asByteBuffer());
-            DataBufferUtils.release(buffer);
-            bodyRef.set(charBuffer.toString());
-        });
-        //获取request body
-        return bodyRef.get();
-    }
-
-    private DataBuffer stringBuffer(String value) {
-        byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
-
-        NettyDataBufferFactory nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
-        DataBuffer buffer = nettyDataBufferFactory.allocateBuffer(bytes.length);
-        buffer.write(bytes);
-        return buffer;
+    private Mono<Void> noAuth(ServerWebExchange exchange) {
+        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+        return exchange.getResponse().setComplete();
     }
 
     @Override

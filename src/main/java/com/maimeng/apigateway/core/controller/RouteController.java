@@ -1,4 +1,4 @@
-package com.maimeng.apigateway.controller;
+package com.maimeng.apigateway.core.controller;
 
 import com.maimeng.apigateway.core.service.DynamicRouteService;
 import org.springframework.cloud.gateway.route.RouteDefinition;

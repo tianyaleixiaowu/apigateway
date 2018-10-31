@@ -32,12 +32,11 @@ eureka:
     prefer-ip-address: true
 ###############################---jwt---##############################
 jwt:
-  token-header: Authorization
-  expire: 14400
-  rsa-secret: xx1WET12^%3^(WE45
-client:
-  id: ace-auth
-  secret: 123456
-  token-header: x-client-token
-  expire: 14400
-  rsa-secret: x2318^^(*WRYQWR(QW&T
+  # 加密秘钥
+  secret: f4e2e5203434xx1WET12^%3^(WE45
+  # token有效时长，7天，单位秒
+  expire: 604800
+  header: token
+###############################---log---##############################
+logging:
+  file: ./logback.log
