@@ -1,0 +1,43 @@
+spring:
+  profiles:
+    active: ${ENV:prod}
+  application:
+    name: gateway
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/pingtai?useUnicode=true&characterEncoding=UTF8
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASS:root}
+  jpa:
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect  #不加这句则默认为myisam引擎
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true   #开启后，就不用配path了，自动就
+          lowerCaseServiceId: true
+###############################---management---##############################
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+###############################---eureka---##############################
+eureka:
+  instance:
+    prefer-ip-address: true
+###############################---jwt---##############################
+jwt:
+  token-header: Authorization
+  expire: 14400
+  rsa-secret: xx1WET12^%3^(WE45
+client:
+  id: ace-auth
+  secret: 123456
+  token-header: x-client-token
+  expire: 14400
+  rsa-secret: x2318^^(*WRYQWR(QW&T
