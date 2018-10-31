@@ -1,6 +1,6 @@
 package com.maimeng.apigateway.controller;
 
-import com.maimeng.apigateway.route.DynamicRouteService;
+import com.maimeng.apigateway.core.service.DynamicRouteService;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.web.bind.annotation.*;
 
