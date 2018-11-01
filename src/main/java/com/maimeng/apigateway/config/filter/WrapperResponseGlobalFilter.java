@@ -1,6 +1,8 @@
 package com.maimeng.apigateway.config.filter;
 
 import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -20,7 +22,9 @@ import java.nio.charset.Charset;
  * @author wuweifeng wrote on 2018/10/31.
  */
 @Component
-public class ToUppercaseGlobalFilter implements GlobalFilter, Ordered {
+public class WrapperResponseGlobalFilter implements GlobalFilter, Ordered {
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
     @Override
     public int getOrder() {
         // -1 is response write filter, must be called before that
@@ -43,6 +47,10 @@ public class ToUppercaseGlobalFilter implements GlobalFilter, Ordered {
                         //释放掉内存
                         DataBufferUtils.release(dataBuffer);
                         String s = new String(content, Charset.forName("UTF-8"));
+                        logger.info("返回值是：");
+                        logger.info(s);
+                        logger.info("-------------------用户请求结束-----------------");
+
                         byte[] uppedContent = new String(content, Charset.forName("UTF-8")).getBytes();
                         return bufferFactory.wrap(uppedContent);
                     }));

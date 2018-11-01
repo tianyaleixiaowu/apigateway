@@ -7,17 +7,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
-import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.core.Ordered;
-import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-import reactor.ipc.netty.http.client.HttpClientResponse;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -68,15 +64,7 @@ public class AuthSignFilter implements GlobalFilter, Ordered {
         //将现在的request 变成 change对象 
         ServerWebExchange build = exchange.mutate().request(request).build();
 
-        return chain.filter(build).then(Mono.fromRunnable(() -> {
-            // 获取到response 可以对响应体进行重写。
-            ServerHttpResponse response = exchange.getResponse();
-            DataBufferFactory dataBufferFactory = response.bufferFactory();
-
-            HttpClientResponse clientResponse = exchange.getAttribute(ServerWebExchangeUtils.CLIENT_RESPONSE_ATTR);
-            System.err.println(2);
-            
-        }));
+        return chain.filter(build);
     }
 
     private Mono<Void> noAuth(ServerWebExchange exchange) {
