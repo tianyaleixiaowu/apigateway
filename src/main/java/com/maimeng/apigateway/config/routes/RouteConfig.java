@@ -13,7 +13,8 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.List;
 
-import static com.maimeng.apigateway.repository.RedisRouteDefinitionRepository.GATEWAY_ROUTES;
+import static com.maimeng.apigateway.core.repository.RedisRouteDefinitionRepository.GATEWAY_ROUTES;
+
 
 /**
  * @author wuweifeng wrote on 2018/10/26.

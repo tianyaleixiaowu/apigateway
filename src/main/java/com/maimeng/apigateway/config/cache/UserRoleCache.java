@@ -1,6 +1,6 @@
 package com.maimeng.apigateway.config.cache;
 
-import com.maimeng.apigateway.model.PtRole;
+import com.maimeng.apigateway.core.model.PtRole;
 import com.xiaoleilu.hutool.json.JSONArray;
 import com.xiaoleilu.hutool.json.JSONObject;
 import com.xiaoleilu.hutool.json.JSONUtil;
@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.maimeng.apigateway.common.Constant.CACHE_USER_ROLE_EXPIE;
+import static com.maimeng.apigateway.common.Constant.CACHE_USER_ROLE_KEY;
+
 
 /**
  * @author wuweifeng wrote on 2017/10/27.
@@ -22,14 +25,7 @@ import java.util.stream.Collectors;
 public class UserRoleCache {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
-    /**
-     * 用户角色
-     */
-    String CACHE_USER_ROLE_KEY = "user_role_key";
-    /**
-     * 权限保存10个小时，redis存储的user权限
-     */
-    int CACHE_USER_ROLE_EXPIE = 10;
+
 
     /**
      * 根据userId获取缓存的角色
@@ -40,6 +36,9 @@ public class UserRoleCache {
      */
     public List<PtRole> findRolesByUserId(Long userId) {
         Object object = stringRedisTemplate.opsForValue().get(roleKeyOfUserId(userId));
+        if (object == null) {
+            return null;
+        }
         JSONArray jsonArray = JSONUtil.parseArray(object.toString());
         return jsonArray.stream().map(json -> JSONUtil.toBean((JSONObject) json, PtRole.class)).collect(Collectors
                 .toList());

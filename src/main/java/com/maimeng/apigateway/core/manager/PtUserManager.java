@@ -1,7 +1,7 @@
-package com.maimeng.apigateway.manager;
+package com.maimeng.apigateway.core.manager;
 
-import com.maimeng.apigateway.model.PtUser;
-import com.maimeng.apigateway.repository.PtUserRepository;
+import com.maimeng.apigateway.core.model.PtUser;
+import com.maimeng.apigateway.core.repository.PtUserRepository;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;

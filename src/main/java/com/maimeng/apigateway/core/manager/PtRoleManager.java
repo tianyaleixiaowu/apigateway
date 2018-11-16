@@ -1,13 +1,12 @@
-package com.maimeng.apigateway.manager;
+package com.maimeng.apigateway.core.manager;
 
 import com.maimeng.apigateway.config.cache.UserRoleCache;
-import com.maimeng.apigateway.model.PtRole;
-import com.maimeng.apigateway.model.PtUser;
-import com.maimeng.apigateway.model.PtUserRole;
-import com.maimeng.apigateway.repository.PtRoleRepository;
-import com.maimeng.apigateway.repository.PtUserRoleRepository;
+import com.maimeng.apigateway.core.model.PtRole;
+import com.maimeng.apigateway.core.model.PtUser;
+import com.maimeng.apigateway.core.model.PtUserRole;
+import com.maimeng.apigateway.core.repository.PtRoleRepository;
+import com.maimeng.apigateway.core.repository.PtUserRoleRepository;
 import com.xiaoleilu.hutool.util.CollectionUtil;
-import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -33,42 +32,15 @@ public class PtRoleManager {
      *         userId
      * @return 集合
      */
-    public List<PtRole> findByUserId(Long userId) {
+    private List<PtRole> findByUserId(Long userId) {
         List<PtUserRole> userRoles = ptUserRoleRepository.findByUserId(userId);
         return userRoles.stream().map(userRole -> findByRoleId(userRole.getRoleId())).collect(Collectors
                 .toList());
     }
 
-    public String findManagerRoleName(Long userId) {
-        return findByUserId(userId).get(0).getName();
-    }
-
-    public Long findManagerRoleId(Long userId) {
-        return findByUserId(userId).get(0).getId();
-    }
-
     public PtRole findByRoleId(Long roleId) {
         return ptRoleRepository.getOne(roleId);
     }
-
-    /**
-     * 添加一个role
-     *
-     * @param ptRole
-     *         ptRole
-     * @return ptRole
-     */
-    public PtRole add(PtRole ptRole) {
-        ptRole.setCreateTime(DateTime.now().toDate());
-        ptRole.setUpdateTime(DateTime.now().toDate());
-        return ptRoleRepository.save(ptRole);
-    }
-
-    public PtRole update(PtRole ptRole) {
-        ptRole.setUpdateTime(DateTime.now().toDate());
-        return ptRoleRepository.save(ptRole);
-    }
-
 
     /**
      * 获取用户的roles
@@ -78,12 +50,23 @@ public class PtRoleManager {
      * @return 角色集合
      */
     public List<PtRole> findRolesByUser(PtUser user) {
+        return findRolesByUser(user.getId());
+    }
+
+    /**
+     * 获取用户的roles
+     *
+     * @param userId
+     *         userId
+     * @return 角色集合
+     */
+    public List<PtRole> findRolesByUser(Long userId) {
         //从缓存获取
-        List<PtRole> roles = userRoleCache.findRolesByUserId(user.getId());
+        List<PtRole> roles = userRoleCache.findRolesByUserId(userId);
         if (CollectionUtil.isEmpty(roles)) {
-            roles = findByUserId(user.getId());
+            roles = findByUserId(userId);
             //放入缓存
-            userRoleCache.saveUserRolesByUser(user.getId(), roles);
+            userRoleCache.saveUserRolesByUser(userId, roles);
         }
         return roles;
     }

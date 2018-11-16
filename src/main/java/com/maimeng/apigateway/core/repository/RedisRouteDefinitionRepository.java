@@ -1,4 +1,4 @@
-package com.maimeng.apigateway.repository;
+package com.maimeng.apigateway.core.repository;
 
 import com.alibaba.fastjson.JSON;
 import org.springframework.cloud.gateway.route.RouteDefinition;

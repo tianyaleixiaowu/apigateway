@@ -20,6 +20,7 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.Charset;
 
 /**
+ * 该filter用来获取后台服务返回的值
  * @author wuweifeng wrote on 2018/10/31.
  */
 @Component

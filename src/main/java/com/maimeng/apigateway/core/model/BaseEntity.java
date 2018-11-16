@@ -1,4 +1,4 @@
-package com.maimeng.apigateway.model;
+package com.maimeng.apigateway.core.model;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;

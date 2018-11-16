@@ -1,7 +1,7 @@
-package com.maimeng.apigateway.manager;
+package com.maimeng.apigateway.core.manager;
 
-import com.maimeng.apigateway.model.PtUserRole;
-import com.maimeng.apigateway.repository.PtUserRoleRepository;
+import com.maimeng.apigateway.core.model.PtUserRole;
+import com.maimeng.apigateway.core.repository.PtUserRoleRepository;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -36,15 +36,4 @@ public class PtUserRoleManager {
     public List<PtUserRole> findByUserId(Long userId) {
         return ptUserRoleRepository.findByUserId(userId);
     }
-
-    /**
-     * 修改
-     *
-     * @param ptUserRole ptUserRole
-     */
-    public void update(PtUserRole ptUserRole) {
-        ptUserRoleRepository.save(ptUserRole);
-    }
-
-
 }

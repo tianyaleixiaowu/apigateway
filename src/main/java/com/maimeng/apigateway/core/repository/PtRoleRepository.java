@@ -1,6 +1,6 @@
-package com.maimeng.apigateway.repository;
+package com.maimeng.apigateway.core.repository;
 
-import com.maimeng.apigateway.model.PtRole;
+import com.maimeng.apigateway.core.model.PtRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

@@ -52,6 +52,10 @@ public class LoggerFilter implements GlobalFilter, Ordered {
         if ("POST".equals(method) || "PUT".equals(method) || "DELETE".equals(method)) {
             //从请求里获取Post请求体
             String bodyStr = resolveBodyFromRequest(serverHttpRequest);
+            if (bodyStr == null) {
+                //如果post为空，直接就返回完事
+                return chain.filter(exchange);
+            }
             //TODO 得到Post请求的请求参数后，做你想做的事
             logger.info("传参为:");
             logger.info(bodyStr);

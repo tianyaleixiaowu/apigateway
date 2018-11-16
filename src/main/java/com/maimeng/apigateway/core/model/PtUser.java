@@ -1,4 +1,4 @@
-package com.maimeng.apigateway.model;
+package com.maimeng.apigateway.core.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -55,7 +55,7 @@ public class PtUser extends BaseEntity {
      */
     private String memo;
     /**
-     * 状态，（0正常，-1被删除，1是不获取该用户EC通话信息）
+     * 状态，（0正常，-1被删除，1）
      */
     private Integer state;
 
